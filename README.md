@@ -1,2 +1,14 @@
 # TOOperator
-An application that makes all the functions of a Train Order Operator available to the user.  The application allows the operator to record and print train orders and clearance cards.  Additionally, the operator can OS a train.
+
+Desktop Java application that combines TrainOrder and ClearanceCard workflows in one UI:
+- Record and print train orders
+- Issue and print clearance cards
+- OS (observe/report) train movements
+
+## Run
+
+```bash
+cd /tmp/workspace/TrainBeans/TOOperator/tooperator
+mvn package
+java -jar target/tooperator-1.0-SNAPSHOT.jar
+```
