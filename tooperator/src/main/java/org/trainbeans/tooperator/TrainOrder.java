@@ -10,4 +10,8 @@ public record TrainOrder(
         String operator,
         LocalDateTime recordedAt
 ) {
+    @Override
+    public String toString() {
+        return "#" + orderNumber + " — " + trainSymbol + " @ " + station;
+    }
 }

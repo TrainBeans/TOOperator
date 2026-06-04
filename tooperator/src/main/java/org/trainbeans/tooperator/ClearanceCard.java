@@ -10,4 +10,8 @@ public record ClearanceCard(
         String operator,
         LocalDateTime issuedAt
 ) {
+    @Override
+    public String toString() {
+        return "#" + cardNumber + " — " + trainSymbol + " (" + authorityLimits + ")";
+    }
 }

@@ -9,4 +9,8 @@ public record TrainOsEvent(
         LocalDateTime observedAt,
         String operator
 ) {
+    @Override
+    public String toString() {
+        return trainSymbol + " — " + location + " (" + direction + ")";
+    }
 }
