@@ -5,8 +5,13 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.print.PrinterException;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -67,26 +72,41 @@ public final class TOOperatorDesktopApp {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 12, 12, 12));
 
-        JPanel form = createFormPanel("Form 19 — Order Entry");
+        JPanel form = createEntryPanel("Form 19 — Train Order Entry");
+        GridBagConstraints gbc = formGbc();
+        int row = 0;
+
+        JTextField formType = new JTextField();
         JFormattedTextField orderNumber = new JFormattedTextField();
-        JTextField trainSymbol = new JTextField();
-        JTextField station = new JTextField();
-        JTextField operator = new JTextField();
-        JTextArea orderText = new JTextArea(6, 20);
+        JTextField fromLocation = new JTextField();
+        JTextField orderDate = new JTextField();
+        JTextArea toLines = new JTextArea(2, 20);
+        JTextField operatorInitials = new JTextField();
+        JTextField timeIssued = new JTextField();
+        JTextField atLocation = new JTextField();
+        JTextArea orderText = new JTextArea(5, 20);
+        JTextField dispatcherInitials = new JTextField();
+        JTextField completeTime = new JTextField();
+        JTextField completeOperator = new JTextField();
+        JTextField recopiedBy = new JTextField();
+        JTextField recopyOperator = new JTextField();
+        JTextField recopyDate = new JTextField();
+
+        toLines.setLineWrap(true);
+        toLines.setWrapStyleWord(true);
         orderText.setLineWrap(true);
         orderText.setWrapStyleWord(true);
         orderText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
 
-        form.add(new JLabel("TRAIN ORDER No."));
-        form.add(orderNumber);
-        form.add(new JLabel("To (Train Symbol)"));
-        form.add(trainSymbol);
-        form.add(new JLabel("At (Station)"));
-        form.add(station);
-        form.add(new JLabel("Operator"));
-        form.add(operator);
-        form.add(new JLabel("Instructions"));
-        form.add(new JScrollPane(orderText));
+        addFormRow(form, gbc, row++, "FORM 19", formType);
+        addFormRow(form, gbc, row++, "TRAIN ORDER No.", orderNumber);
+        addTwoFieldRow(form, gbc, row++, "From", fromLocation, "Date", orderDate);
+        addFormRow(form, gbc, row++, "To", new JScrollPane(toLines));
+        addThreeFieldRow(form, gbc, row++, "Opr.;", operatorInitials, "M.", timeIssued, "At", atLocation);
+        addFormRow(form, gbc, row++, "Instructions", new JScrollPane(orderText));
+        addFormRow(form, gbc, row++, "C.T.D.", dispatcherInitials);
+        addTwoFieldRow(form, gbc, row++, "complete time", completeTime, "opr.", completeOperator);
+        addThreeFieldRow(form, gbc, row++, "recopied by", recopiedBy, "opr.:", recopyOperator, "date", recopyDate);
 
         DefaultListModel<TrainOrder> orderModel = new DefaultListModel<>();
         JList<TrainOrder> orderList = new JList<>(orderModel);
@@ -99,13 +119,14 @@ public final class TOOperatorDesktopApp {
             try {
                 TrainOrder order = logbook.recordTrainOrder(
                         Long.parseLong(orderNumber.getText().trim()),
-                        trainSymbol.getText().trim(),
-                        station.getText().trim(),
+                        firstNonBlankLine(toLines.getText()),
+                        atLocation.getText().trim(),
                         orderText.getText().trim(),
-                        operator.getText().trim());
+                        operatorInitials.getText().trim());
                 orderModel.add(0, order);
                 preview.setText(DocumentRenderer.renderTrainOrder(order));
                 orderNumber.setValue(null);
+                toLines.setText("");
                 orderText.setText("");
             } catch (NumberFormatException ex) {
                 showValidationError("Order number must be numeric.");
@@ -133,23 +154,28 @@ public final class TOOperatorDesktopApp {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 12, 12, 12));
 
-        JPanel form = createFormPanel("Form A — Clearance Card Entry");
-        JFormattedTextField cardNumber = new JFormattedTextField();
-        JTextField trainSymbol = new JTextField();
-        JTextField limits = new JTextField();
-        JTextField dispatcher = new JTextField();
-        JTextField operator = new JTextField();
+        JPanel form = createEntryPanel("Form A — Clearance Card Entry");
+        GridBagConstraints gbc = formGbc();
+        int row = 0;
 
-        form.add(new JLabel("Card Number"));
-        form.add(cardNumber);
-        form.add(new JLabel("Conductor and Engineer No."));
-        form.add(trainSymbol);
-        form.add(new JLabel("Authority Limits"));
-        form.add(limits);
-        form.add(new JLabel("Dispatcher"));
-        form.add(dispatcher);
-        form.add(new JLabel("Operator"));
-        form.add(operator);
+        JTextField station = new JTextField();
+        JTextField trainSymbol = new JTextField();
+        JTextField issuedDate = new JTextField(LocalDate.now().toString());
+        JTextField issuedTime = new JTextField(LocalTime.now().withSecond(0).withNano(0).toString());
+        JTextField orderCount = new JTextField("0");
+        JTextField signalStopFor = new JTextField();
+        JTextField operator = new JTextField();
+        JTextArea orderNumbers = new JTextArea(2, 20);
+        orderNumbers.setLineWrap(true);
+        orderNumbers.setWrapStyleWord(true);
+
+        addFormRow(form, gbc, row++, "Station", station);
+        addFormRow(form, gbc, row++, "Conductor and Engineer No.", trainSymbol);
+        addTwoFieldRow(form, gbc, row++, "Date", issuedDate, "Time", issuedTime);
+        addFormRow(form, gbc, row++, "I have ___ orders for your train", orderCount);
+        addFormRow(form, gbc, row++, "Train order signal is at stop for", signalStopFor);
+        addFormRow(form, gbc, row++, "Operator", operator);
+        addFormRow(form, gbc, row++, "Numbers of orders delivered with this clearance", new JScrollPane(orderNumbers));
 
         DefaultListModel<ClearanceCard> cardModel = new DefaultListModel<>();
         JList<ClearanceCard> cardList = new JList<>(cardModel);
@@ -160,17 +186,18 @@ public final class TOOperatorDesktopApp {
         JButton issue = new JButton("Issue Clearance");
         issue.addActionListener(e -> {
             try {
+                long nextCardNumber = logbook.getClearanceCards().size() + 1L;
                 ClearanceCard card = logbook.issueClearanceCard(
-                        Long.parseLong(cardNumber.getText().trim()),
+                        nextCardNumber,
                         trainSymbol.getText().trim(),
-                        limits.getText().trim(),
-                        dispatcher.getText().trim(),
+                        buildAuthorityLimits(station.getText().trim(), orderCount.getText().trim(),
+                                signalStopFor.getText().trim(), orderNumbers.getText().trim()),
+                        (issuedDate.getText().trim() + " " + issuedTime.getText().trim()).trim(),
                         operator.getText().trim());
                 cardModel.add(0, card);
                 preview.setText(DocumentRenderer.renderClearanceCard(card));
-                cardNumber.setValue(null);
-            } catch (NumberFormatException ex) {
-                showValidationError("Card number must be numeric.");
+            } catch (RuntimeException ex) {
+                showValidationError("Unable to issue clearance card: " + ex.getMessage());
             }
         });
 
@@ -268,6 +295,73 @@ public final class TOOperatorDesktopApp {
         form.setBorder(BorderFactory.createCompoundBorder(outside, BorderFactory.createEmptyBorder(8, 8, 8, 8)));
         form.setBackground(Color.WHITE);
         return form;
+    }
+
+    private static JPanel createEntryPanel(String title) {
+        JPanel form = new JPanel(new GridBagLayout());
+        Border outside = BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(180, 188, 200)), title);
+        form.setBorder(BorderFactory.createCompoundBorder(outside, BorderFactory.createEmptyBorder(8, 8, 8, 8)));
+        form.setBackground(Color.WHITE);
+        return form;
+    }
+
+    private static GridBagConstraints formGbc() {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        return gbc;
+    }
+
+    private static void addFormRow(JPanel panel, GridBagConstraints gbc, int row, String label, java.awt.Component field) {
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0;
+        panel.add(new JLabel(label), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+        panel.add(field, gbc);
+    }
+
+    private static void addTwoFieldRow(JPanel panel, GridBagConstraints gbc, int row,
+                                       String leftLabel, java.awt.Component leftField,
+                                       String rightLabel, java.awt.Component rightField) {
+        JPanel rowPanel = new JPanel(new GridLayout(1, 4, 8, 0));
+        rowPanel.setOpaque(false);
+        rowPanel.add(new JLabel(leftLabel));
+        rowPanel.add(leftField);
+        rowPanel.add(new JLabel(rightLabel));
+        rowPanel.add(rightField);
+        addFormRow(panel, gbc, row, "", rowPanel);
+    }
+
+    private static void addThreeFieldRow(JPanel panel, GridBagConstraints gbc, int row,
+                                         String label1, java.awt.Component field1,
+                                         String label2, java.awt.Component field2,
+                                         String label3, java.awt.Component field3) {
+        JPanel rowPanel = new JPanel(new GridLayout(1, 6, 8, 0));
+        rowPanel.setOpaque(false);
+        rowPanel.add(new JLabel(label1));
+        rowPanel.add(field1);
+        rowPanel.add(new JLabel(label2));
+        rowPanel.add(field2);
+        rowPanel.add(new JLabel(label3));
+        rowPanel.add(field3);
+        addFormRow(panel, gbc, row, "", rowPanel);
+    }
+
+    private static String firstNonBlankLine(String text) {
+        for (String line : text.split("\\R")) {
+            if (!line.isBlank()) {
+                return line.trim();
+            }
+        }
+        return "";
+    }
+
+    private static String buildAuthorityLimits(String station, String orderCount, String signalStopFor, String orderNumbers) {
+        return "Station: " + station + " | Orders: " + orderCount + " | Stop for: " + signalStopFor
+                + " | Order Nos.: " + orderNumbers.replace('\n', ',');
     }
 
     private static JPanel createWorkspace(JList<?> list, JTextPane preview) {
