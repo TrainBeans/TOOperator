@@ -40,6 +40,8 @@ final class DocumentRenderer {
     }
 
     static String renderClearanceCard(ClearanceCard card) {
+        ClearanceDetails details = parseClearanceDetails(card.authorityLimits());
+        String[] issuedDateTime = parseIssuedDateTime(card.dispatcher(), card.issuedAt());
         return """
                 <html><body style='background:#e8e8e8;margin:0;padding:16px;font-family:Arial,sans-serif;'>
                 <div style='max-width:520px;margin:auto;background:#fff;border:2px solid #000;padding:18px 22px;font-family:"Courier New",monospace;'>
@@ -52,18 +54,22 @@ final class DocumentRenderer {
                     <span style='margin-left:8px'>Time <span style='display:inline-block;border-bottom:1px solid #000;min-width:90px;text-align:center'>%s</span></span>
                   </div>
                   <div style='margin:6px 0'>Conductor and Engineer No. <span style='display:inline-block;border-bottom:1px solid #000;min-width:220px;text-align:center'>%s</span></div>
-                  <div style='margin:6px 0'>Dispatcher <span style='display:inline-block;border-bottom:1px solid #000;min-width:240px;text-align:center'>%s</span></div>
+                  <div style='margin:6px 0'>I have <span style='display:inline-block;border-bottom:1px solid #000;min-width:48px;text-align:center'>%s</span> orders for your train.</div>
+                  <div style='margin:6px 0'>Train order signal is at Stop for <span style='display:inline-block;border-bottom:1px solid #000;min-width:210px;text-align:center'>%s</span></div>
+                  <div style='margin:6px 0'>Numbers of orders delivered with this clearance: <span style='display:inline-block;border-bottom:1px solid #000;min-width:210px;text-align:center'>%s</span></div>
                   <hr style='border:none;border-top:1px solid #000;margin:12px 0'/>
                   <div style='text-align:right;'>
                     <span style='display:inline-block;border-bottom:1px solid #000;min-width:240px;text-align:center'>%s</span> Operator.
                   </div>
                 </div></body></html>
                 """.formatted(
+                escapeHtml(details.station()),
+                escapeHtml(issuedDateTime[0]),
+                escapeHtml(issuedDateTime[1]),
                 escapeHtml(card.trainSymbol()),
-                DATE.format(card.issuedAt()),
-                TIME.format(card.issuedAt()),
-                escapeHtml(card.trainSymbol()),
-                escapeHtml(card.dispatcher()),
+                escapeHtml(details.orderCount()),
+                escapeHtml(details.signalStopFor()),
+                escapeHtml(details.orderNumbers()),
                 escapeHtml(card.operator()));
     }
 
@@ -97,5 +103,40 @@ final class DocumentRenderer {
                 .replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;");
+    }
+
+    private static ClearanceDetails parseClearanceDetails(String authorityLimits) {
+        String station = "";
+        String orderCount = "";
+        String signalStopFor = "";
+        String orderNumbers = "";
+
+        if (authorityLimits != null) {
+            for (String part : authorityLimits.split("\\s*\\|\\s*")) {
+                if (part.startsWith("Station:")) {
+                    station = part.substring("Station:".length()).trim();
+                } else if (part.startsWith("Orders:")) {
+                    orderCount = part.substring("Orders:".length()).trim();
+                } else if (part.startsWith("Stop for:")) {
+                    signalStopFor = part.substring("Stop for:".length()).trim();
+                } else if (part.startsWith("Order Nos.:")) {
+                    orderNumbers = part.substring("Order Nos.:".length()).trim();
+                }
+            }
+        }
+        return new ClearanceDetails(station, orderCount, signalStopFor, orderNumbers);
+    }
+
+    private static String[] parseIssuedDateTime(String dispatcher, java.time.LocalDateTime issuedAt) {
+        if (dispatcher != null && !dispatcher.isBlank()) {
+            String[] parts = dispatcher.trim().split("\\s+", 2);
+            String date = parts[0];
+            String time = parts.length > 1 ? parts[1] : "";
+            return new String[]{date, time};
+        }
+        return new String[]{DATE.format(issuedAt), TIME.format(issuedAt)};
+    }
+
+    private record ClearanceDetails(String station, String orderCount, String signalStopFor, String orderNumbers) {
     }
 }
