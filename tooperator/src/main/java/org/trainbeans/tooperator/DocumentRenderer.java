@@ -52,7 +52,6 @@ final class DocumentRenderer {
                     <span style='margin-left:8px'>Time <span style='display:inline-block;border-bottom:1px solid #000;min-width:90px;text-align:center'>%s</span></span>
                   </div>
                   <div style='margin:6px 0'>Conductor and Engineer No. <span style='display:inline-block;border-bottom:1px solid #000;min-width:220px;text-align:center'>%s</span></div>
-                  <div style='margin:6px 0'>Authority Limits <span style='display:inline-block;border-bottom:1px solid #000;min-width:250px;text-align:center'>%s</span></div>
                   <div style='margin:6px 0'>Dispatcher <span style='display:inline-block;border-bottom:1px solid #000;min-width:240px;text-align:center'>%s</span></div>
                   <hr style='border:none;border-top:1px solid #000;margin:12px 0'/>
                   <div style='text-align:right;'>
@@ -64,7 +63,6 @@ final class DocumentRenderer {
                 DATE.format(card.issuedAt()),
                 TIME.format(card.issuedAt()),
                 escapeHtml(card.trainSymbol()),
-                escapeHtml(card.authorityLimits()),
                 escapeHtml(card.dispatcher()),
                 escapeHtml(card.operator()));
     }

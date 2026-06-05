@@ -1,5 +1,6 @@
 package org.trainbeans.tooperator;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
@@ -26,6 +27,8 @@ class DocumentRendererTest {
 
         assertTrue(html.contains("CLEARANCE"));
         assertTrue(html.contains("Form 427-A"));
-        assertTrue(html.contains("Yard to Jct"));
+        assertTrue(html.contains("Conductor and Engineer No."));
+        assertTrue(html.contains("Extra 1234 East"));
+        assertFalse(html.contains("Authority Limits"));
     }
 }
