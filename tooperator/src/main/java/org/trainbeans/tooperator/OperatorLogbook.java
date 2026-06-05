@@ -13,7 +13,11 @@ public class OperatorLogbook {
     private final List<TrainOsEvent> osEvents = new ArrayList<>();
 
     public TrainOrder recordTrainOrder(long orderNumber, String trainSymbol, String station, String orderText, String operator) {
-        TrainOrder order = new TrainOrder(orderNumber, trainSymbol, station, orderText, operator, LocalDateTime.now());
+        return recordTrainOrder(orderNumber, trainSymbol, station, orderText, operator, "");
+    }
+
+    public TrainOrder recordTrainOrder(long orderNumber, String trainSymbol, String station, String orderText, String operator, String formDetails) {
+        TrainOrder order = new TrainOrder(orderNumber, trainSymbol, station, orderText, operator, LocalDateTime.now(), formDetails);
         trainOrders.add(order);
         return order;
     }

@@ -122,7 +122,21 @@ public final class TOOperatorDesktopApp {
                         firstNonBlankLine(toLines.getText()),
                         atLocation.getText().trim(),
                         orderText.getText().trim(),
-                        operatorInitials.getText().trim());
+                        operatorInitials.getText().trim(),
+                        buildTrainOrderDetails(
+                                formType.getText().trim(),
+                                fromLocation.getText().trim(),
+                                orderDate.getText().trim(),
+                                toLines.getText().trim(),
+                                operatorInitials.getText().trim(),
+                                timeIssued.getText().trim(),
+                                atLocation.getText().trim(),
+                                dispatcherInitials.getText().trim(),
+                                completeTime.getText().trim(),
+                                completeOperator.getText().trim(),
+                                recopiedBy.getText().trim(),
+                                recopyOperator.getText().trim(),
+                                recopyDate.getText().trim()));
                 orderModel.add(0, order);
                 preview.setText(DocumentRenderer.renderTrainOrder(order));
                 orderNumber.setValue(null);
@@ -362,6 +376,25 @@ public final class TOOperatorDesktopApp {
     private static String buildAuthorityLimits(String station, String orderCount, String signalStopFor, String orderNumbers) {
         return "Station: " + station + " | Orders: " + orderCount + " | Stop for: " + signalStopFor
                 + " | Order Nos.: " + orderNumbers.replace('\n', ',');
+    }
+
+    private static String buildTrainOrderDetails(String formType, String fromLocation, String orderDate, String toLines,
+                                                 String operatorInitials, String timeIssued, String atLocation,
+                                                 String dispatcherInitials, String completeTime, String completeOperator,
+                                                 String recopiedBy, String recopyOperator, String recopyDate) {
+        return "Form: " + formType
+                + " | From: " + fromLocation
+                + " | Date: " + orderDate
+                + " | To: " + toLines.replace('\n', ',')
+                + " | Opr: " + operatorInitials
+                + " | Time: " + timeIssued
+                + " | At: " + atLocation
+                + " | CTD: " + dispatcherInitials
+                + " | Complete Time: " + completeTime
+                + " | Complete Opr: " + completeOperator
+                + " | Recopied By: " + recopiedBy
+                + " | Recopy Opr: " + recopyOperator
+                + " | Recopy Date: " + recopyDate;
     }
 
     private static JPanel createWorkspace(JList<?> list, JTextPane preview) {

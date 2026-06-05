@@ -10,6 +10,7 @@ final class DocumentRenderer {
     }
 
     static String renderTrainOrder(TrainOrder order) {
+        TrainOrderDetails details = parseTrainOrderDetails(order.formDetails());
         return """
                 <html><body style='background:#f0f0f0;margin:0;padding:16px;font-family:Arial,sans-serif;'>
                 <div style='max-width:760px;margin:auto;background:#fff;border:3px double #000;padding:18px 24px;font-family:"Courier New",monospace;'>
@@ -19,6 +20,9 @@ final class DocumentRenderer {
                   </div>
                   <div style='text-align:center;margin-top:8px;font-size:16px;'>TRAIN ORDER No. <b>%d</b></div>
                   <hr style='border:none;border-top:2px solid #000;margin:10px 0'/>
+                  <div style='margin:6px 0'>Form <span style='display:inline-block;border-bottom:1px solid #000;min-width:120px'>%s</span>
+                    <span style='margin-left:16px'>From <span style='display:inline-block;border-bottom:1px solid #000;min-width:220px'>%s</span></span>
+                  </div>
                   <div style='margin:6px 0'>To <span style='display:inline-block;border-bottom:1px solid #000;min-width:220px'>%s</span></div>
                   <div style='margin:6px 0'>At <span style='display:inline-block;border-bottom:1px solid #000;min-width:180px'>%s</span>
                     <span style='margin-left:16px'>Date <span style='display:inline-block;border-bottom:1px solid #000;min-width:180px'>%s</span></span>
@@ -27,16 +31,32 @@ final class DocumentRenderer {
                     <span style='margin-left:16px'>Time <span style='display:inline-block;border-bottom:1px solid #000;min-width:90px'>%s</span></span>
                   </div>
                   <div style='border:1px solid #000;min-height:200px;white-space:pre-wrap;padding:8px;margin-top:10px;line-height:1.5'>%s</div>
+                  <div style='margin-top:8px'>C.T.D. <span style='display:inline-block;border-bottom:1px solid #000;min-width:150px'>%s</span></div>
+                  <div style='margin-top:6px'>complete time <span style='display:inline-block;border-bottom:1px solid #000;min-width:110px'>%s</span>
+                    <span style='margin-left:10px'>opr. <span style='display:inline-block;border-bottom:1px solid #000;min-width:90px'>%s</span></span>
+                  </div>
+                  <div style='margin-top:6px'>recopied by <span style='display:inline-block;border-bottom:1px solid #000;min-width:140px'>%s</span>
+                    <span style='margin-left:10px'>opr.: <span style='display:inline-block;border-bottom:1px solid #000;min-width:90px'>%s</span></span>
+                    <span style='margin-left:10px'>date <span style='display:inline-block;border-bottom:1px solid #000;min-width:120px'>%s</span></span>
+                  </div>
                   <div style='margin-top:10px;font-size:11px;text-align:center;font-style:italic;'>conductor and engineer must each have a copy of this order</div>
                 </div></body></html>
                 """.formatted(
                 order.orderNumber(),
-                escapeHtml(order.trainSymbol()),
-                escapeHtml(order.station()),
-                DATE.format(order.recordedAt()),
-                escapeHtml(order.operator()),
-                TIME.format(order.recordedAt()),
-                escapeHtml(order.orderText()));
+                escapeHtml(nonBlank(details.formType(), "19")),
+                escapeHtml(details.fromLocation()),
+                escapeHtml(nonBlank(details.toLines(), order.trainSymbol())),
+                escapeHtml(nonBlank(details.atLocation(), order.station())),
+                escapeHtml(nonBlank(details.orderDate(), DATE.format(order.recordedAt()))),
+                escapeHtml(nonBlank(details.operatorInitials(), order.operator())),
+                escapeHtml(nonBlank(details.timeIssued(), TIME.format(order.recordedAt()))),
+                escapeHtml(order.orderText()),
+                escapeHtml(details.dispatcherInitials()),
+                escapeHtml(details.completeTime()),
+                escapeHtml(details.completeOperator()),
+                escapeHtml(details.recopiedBy()),
+                escapeHtml(details.recopyOperator()),
+                escapeHtml(details.recopyDate()));
     }
 
     static String renderClearanceCard(ClearanceCard card) {
@@ -135,6 +155,90 @@ final class DocumentRenderer {
             return new String[]{date, time};
         }
         return new String[]{DATE.format(issuedAt), TIME.format(issuedAt)};
+    }
+
+    private static TrainOrderDetails parseTrainOrderDetails(String formDetails) {
+        String formType = "";
+        String fromLocation = "";
+        String orderDate = "";
+        String toLines = "";
+        String operatorInitials = "";
+        String timeIssued = "";
+        String atLocation = "";
+        String dispatcherInitials = "";
+        String completeTime = "";
+        String completeOperator = "";
+        String recopiedBy = "";
+        String recopyOperator = "";
+        String recopyDate = "";
+
+        if (formDetails != null) {
+            for (String part : formDetails.split("\\s*\\|\\s*")) {
+                if (part.startsWith("Form:")) {
+                    formType = part.substring("Form:".length()).trim();
+                } else if (part.startsWith("From:")) {
+                    fromLocation = part.substring("From:".length()).trim();
+                } else if (part.startsWith("Date:")) {
+                    orderDate = part.substring("Date:".length()).trim();
+                } else if (part.startsWith("To:")) {
+                    toLines = part.substring("To:".length()).trim();
+                } else if (part.startsWith("Opr:")) {
+                    operatorInitials = part.substring("Opr:".length()).trim();
+                } else if (part.startsWith("Time:")) {
+                    timeIssued = part.substring("Time:".length()).trim();
+                } else if (part.startsWith("At:")) {
+                    atLocation = part.substring("At:".length()).trim();
+                } else if (part.startsWith("CTD:")) {
+                    dispatcherInitials = part.substring("CTD:".length()).trim();
+                } else if (part.startsWith("Complete Time:")) {
+                    completeTime = part.substring("Complete Time:".length()).trim();
+                } else if (part.startsWith("Complete Opr:")) {
+                    completeOperator = part.substring("Complete Opr:".length()).trim();
+                } else if (part.startsWith("Recopied By:")) {
+                    recopiedBy = part.substring("Recopied By:".length()).trim();
+                } else if (part.startsWith("Recopy Opr:")) {
+                    recopyOperator = part.substring("Recopy Opr:".length()).trim();
+                } else if (part.startsWith("Recopy Date:")) {
+                    recopyDate = part.substring("Recopy Date:".length()).trim();
+                }
+            }
+        }
+
+        return new TrainOrderDetails(
+                formType,
+                fromLocation,
+                orderDate,
+                toLines,
+                operatorInitials,
+                timeIssued,
+                atLocation,
+                dispatcherInitials,
+                completeTime,
+                completeOperator,
+                recopiedBy,
+                recopyOperator,
+                recopyDate);
+    }
+
+    private static String nonBlank(String preferred, String fallback) {
+        return preferred == null || preferred.isBlank() ? fallback : preferred;
+    }
+
+    private record TrainOrderDetails(
+            String formType,
+            String fromLocation,
+            String orderDate,
+            String toLines,
+            String operatorInitials,
+            String timeIssued,
+            String atLocation,
+            String dispatcherInitials,
+            String completeTime,
+            String completeOperator,
+            String recopiedBy,
+            String recopyOperator,
+            String recopyDate
+    ) {
     }
 
     private record ClearanceDetails(String station, String orderCount, String signalStopFor, String orderNumbers) {
