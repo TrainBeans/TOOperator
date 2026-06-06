@@ -1,0 +1,42 @@
+name: CI Smoke
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TRAIN_ORDER_PATH: external/TrainOrder
+      CLEARANCE_CARD_PATH: external/ClearanceCard
+      CLEARANCE_CARD_DOCKERFILE: Dockerfile
+      PORTAL_PORT: 8080
+    steps:
+      - name: Checkout TOOperator
+        uses: actions/checkout@v4
+
+      - name: Checkout TrainOrder
+        uses: actions/checkout@v4
+        with:
+          repository: TrainBeans/TrainOrder
+          path: external/TrainOrder
+
+      - name: Checkout ClearanceCard
+        uses: actions/checkout@v4
+        with:
+          repository: TrainBeans/ClearanceCard
+          path: external/ClearanceCard
+
+      - name: Run CI smoke script
+        run: |
+          chmod +x scripts/ci-smoke.sh
+          ./scripts/ci-smoke.sh "http://localhost:${PORTAL_PORT}"
+
