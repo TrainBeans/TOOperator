@@ -106,7 +106,15 @@ Optional custom base URL:
 ## GitHub Actions workflow
 
 `/.github/workflows/ci-smoke.yml` runs the smoke flow on push, pull request, and manual dispatch.
-It checks out `TOOperator`, `TrainOrder`, and `ClearanceCard`, then executes `scripts/ci-smoke.sh`.
+It checks out `TOOperator`, pulls prebuilt TrainOrder and ClearanceCard images from GHCR, then executes `scripts/ci-smoke.sh`.
+
+`scripts/ci-smoke.sh` supports prebuilt-image mode by setting:
+
+```bash
+export CI_SMOKE_SKIP_BUILD=true
+export TRAIN_ORDER_IMAGE=ghcr.io/trainbeans/tooperator-trainorder:latest
+export CLEARANCE_CARD_IMAGE=ghcr.io/trainbeans/tooperator-clearancecard:latest
+```
 
 ## Optional environment overrides
 

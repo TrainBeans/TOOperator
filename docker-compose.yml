@@ -22,6 +22,7 @@ services:
       start_period: 10s
 
   trainorder:
+    image: ${TRAIN_ORDER_IMAGE:-to-operator-trainorder}
     build:
       context: ${TRAIN_ORDER_PATH:-../TrainOrder}
     container_name: to-operator-trainorder
@@ -36,6 +37,7 @@ services:
       start_period: 15s
 
   clearancecard:
+    image: ${CLEARANCE_CARD_IMAGE:-to-operator-clearancecard}
     build:
       context: ${CLEARANCE_CARD_PATH:-../ClearanceCard}
       dockerfile: ${CLEARANCE_CARD_DOCKERFILE:-Dockerfile}
