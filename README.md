@@ -73,6 +73,28 @@ chmod +x scripts/stop-app.sh
 ./scripts/stop-app.sh
 ```
 
+## Data persistence
+
+The Train Order and Clearance Card apps persist their data to `/app/data` inside
+their containers. `docker-compose.yml` mounts named Docker volumes there so data
+survives container restarts and recreation:
+
+- `trainorder-data` -> `trainorder:/app/data`
+- `clearancecard-data` -> `clearancecard:/app/data`
+
+Data is retained across `docker compose down` (and `./scripts/stop-app.sh`,
+which uses `down` without `-v`). To remove the persisted data, explicitly run:
+
+```bash
+docker compose down -v
+```
+
+Inspect the volumes with:
+
+```bash
+docker volume ls | grep to-operator
+```
+
 ## Health checks and smoke tests
 
 ```bash
